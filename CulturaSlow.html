@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Image Slideshow with Black Fade</title>
+    <link rel="icon" href="image.png" type="image/png">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background animation */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(270deg, #007bff, #00d4ff, #007bff);
+            background-size: 600% 600%;
+            animation: gradientAnimation 10s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .slideshow-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+            z-index: 2; /* Aumenta o z-index para ficar acima da neve */
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .active {
+            opacity: 1;
+        }
+
+        /* Black overlay */
+        .black-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 1;
+        }
+
+        .fade-out {
+            opacity: 1;
+        }
+
+        /* Start button styling */
+        .start-button {
+            position: absolute;
+            z-index: 3; /* Aumenta o z-index para ficar acima da neve */
+            background: url('imagens/image.png') no-repeat center;
+            background-size: contain;
+            width: 100px;
+            height: 100px;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            animation: fadeInButton 2s forwards, spin 10s linear infinite;
+        }
+
+        @keyframes fadeInButton {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .start-button:hover {
+            opacity: 0.8;
+        }
+
+        /* Snowflake styles */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            font-size: 1.5em;
+            pointer-events: none; /* Não interage com o mouse */
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh); /* Caindo até a parte inferior da tela */
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="start-button" onclick="startSlideshow()"></button>
+
+    <div class="slideshow-container">
+        <img class="slide active" src="imagens/Slow cuturinha-1.png" alt="Slow cuturinha-1.png" onclick="toggleFullScreen(this)">
+        <img class="slide" src="imagens/Slow cuturinha-2.png" alt="Slow cuturinha-2.png" onclick="toggleFullScreen(this)">
+        <img class="slide" src="imagens/Slow cuturinha-3.png" alt="Slow cuturinha-3.png" onclick="toggleFullScreen(this)">
+        <img class="slide" src="imagens/Slow cuturinha-4.png" alt="Slow cuturinha-4.png" onclick="toggleFullScreen(this)">
+        <div class="black-overlay" id="overlay"></div>
+    </div>
+
+    <script>
+        let currentIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const overlay = document.getElementById('overlay');
+        const slideshowContainer = document.querySelector('.slideshow-container');
+        const startButton = document.querySelector('.start-button');
+        let interval;
+        let snowflakeInterval; // Variável para armazenar o intervalo da neve
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            overlay.classList.add('fade-out');
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % slides.length; // Avança para o próximo índice
+                showSlide(currentIndex); // Exibe a nova imagem
+                overlay.classList.remove('fade-out');
+            }, 1000); // Tempo da animação
+        }
+
+        function startSlideshow() {
+            startButton.style.display = 'none';
+            slideshowContainer.style.display = 'block';
+            showSlide(currentIndex);
+            interval = setInterval(nextSlide, 30000); // 30 segundos
+
+            // Para a criação de flocos de neve
+            clearInterval(snowflakeInterval);
+        }
+
+        function toggleFullScreen(element) {
+            if (!document.fullscreenElement) {
+                element.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function createSnowflakes() {
+            const snowflakeCount = 5; // Reduzindo ainda mais para 5 flocos de neve
+            for (let i = 0; i < snowflakeCount; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                snowflake.textContent = '❄'; // Caracter de floco de neve
+                snowflake.style.left = Math.random() * 100 + 'vw'; // Posição horizontal aleatória
+                snowflake.style.animationDuration = Math.random() * 3 + 2 + 's'; // Duração aleatória
+                snowflake.style.opacity = Math.random(); // Opacidade aleatória
+                document.body.appendChild(snowflake);
+
+                // Remove o floco de neve após a animação
+                snowflake.addEventListener('animationend', () => {
+                    snowflake.remove();
+                });
+            }
+        }
+
+        // Cria os flocos de neve ao carregar a página
+        createSnowflakes();
+        // Recria os flocos de neve a cada 2 segundos para otimização
+        snowflakeInterval = setInterval(createSnowflakes, 2000);
+    </script>
+</body>
+</html>
